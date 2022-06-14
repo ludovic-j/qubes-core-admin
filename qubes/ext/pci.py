@@ -131,7 +131,7 @@ class PCIDevice(qubes.devices.DeviceInfo):
     regex = re.compile(
         r'^(?P<bus>[0-9a-f]+)_(?P<device>[0-9a-f]+)\.(?P<function>[0-9a-f]+)$')
     _libvirt_regex = re.compile(
-        r'^pci_0000_(?P<bus>[0-9a-f]+)_(?P<device>[0-9a-f]+)_'
+        r'^pci_(?P<pcidom>[0-9]*0000)_(?P<bus>[0-9a-f]+)_(?P<device>[0-9a-f]+)_'
         r'(?P<function>[0-9a-f]+)$')
 
     def __init__(self, backend_domain, ident, libvirt_name=None):
@@ -139,6 +139,9 @@ class PCIDevice(qubes.devices.DeviceInfo):
             dev_match = self._libvirt_regex.match(libvirt_name)
             assert dev_match
             ident = '{bus}_{device}.{function}'.format(**dev_match.groupdict())
+            self.pcidom=dev_match.groupdict()['pcidom']
+        else:
+            self.pcidom='0000'
 
         super().__init__(backend_domain, ident, None)
 
@@ -149,7 +152,7 @@ class PCIDevice(qubes.devices.DeviceInfo):
     def libvirt_name(self):
         # pylint: disable=no-member
         # noinspection PyUnresolvedReferences
-        return 'pci_0000_{}_{}_{}'.format(self.bus, self.device, self.function)
+        return 'pci_{}_{}_{}_{}'.format(self.pcidom, self.bus, self.device, self.function)
 
     @property
     def description(self):
